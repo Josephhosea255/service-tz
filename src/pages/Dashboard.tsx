@@ -49,13 +49,19 @@ export default function Dashboard() {
   if (loading) return null;
   if (!user) return <Navigate to="/auth" replace />;
 
-  async function save(form: FormData) {
+  async function save(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
     const raw = Object.fromEntries(form) as Record<string, string>;
     const parsed = schema.safeParse(raw);
     if (!parsed.success) { toast.error("Please check the form fields"); return; }
     const v = parsed.data;
     const payload = {
-      ...v,
+      name: v.name,
+      category: v.category,
+      description: v.description,
+      phone: v.phone,
+      location: v.location,
       whatsapp: v.whatsapp || null,
       image_url: v.image_url || null,
       owner_id: user!.id,
@@ -91,7 +97,7 @@ export default function Dashboard() {
       {showForm && (
         <Card className="mb-6 p-5 shadow-soft md:p-6">
           <h2 className="mb-4 text-lg font-semibold">{editing ? "Edit listing" : "New listing"}</h2>
-          <form action={save} className="grid gap-4 md:grid-cols-2">
+          <form onSubmit={save} className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
               <Label htmlFor="name">Service / Business name *</Label>
               <Input id="name" name="name" defaultValue={editing?.name} required maxLength={100} />
