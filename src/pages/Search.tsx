@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORIES, LOCATIONS } from "@/lib/categories";
 import { Search } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function SearchPage() {
+  const { t, lang } = useTranslation();
   const [params, setParams] = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [category, setCategory] = useState(params.get("category") ?? "all");
@@ -17,8 +19,8 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = "Browse services — ServiceLink Tanzania";
-  }, []);
+    document.title = (lang === "sw" ? "Vinjari huduma" : "Browse services") + " — ServiceLink Tanzania";
+  }, [lang]);
 
   useEffect(() => {
     setLoading(true);
