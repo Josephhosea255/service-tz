@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, BadgeCheck, Sparkles, MessageCircle } from "lucide-react";
 import { categoryLabel } from "@/lib/categories";
+import { useTranslation } from "@/lib/i18n";
 
 export interface ListingCardData {
   id: string;
@@ -21,9 +22,10 @@ export interface ListingCardData {
 }
 
 export default function ListingCard({ listing }: { listing: ListingCardData }) {
+  const { t } = useTranslation();
   const waNumber = (listing.whatsapp || listing.phone || "").replace(/[^\d]/g, "");
   const waUrl = waNumber
-    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Hi ${listing.name}, I found you on ServiceLink Tanzania.`)}`
+    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(t("card.waMessage", { name: listing.name }))}`
     : null;
 
   return (
