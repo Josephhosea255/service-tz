@@ -10,15 +10,21 @@ import {
   PlusCircle, ShieldCheck, Phone, Search as SearchIcon, Zap,
 } from "lucide-react";
 import hero from "@/assets/hero.jpg";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Home() {
+  const { t, lang } = useTranslation();
   const [q, setQ] = useState("");
   const [featured, setFeatured] = useState<ListingCardData[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "ServiceLink Tanzania — Find trusted fundi, electricians & plumbers near you";
-    const desc = "Hire trusted Tanzanian service providers in minutes. Chat directly via WhatsApp with verified fundi, electricians, plumbers and tutors near you.";
+    document.title = lang === "sw"
+      ? "ServiceLink Tanzania — Pata fundi, fundi umeme na mabomba unaoaminika karibu nawe"
+      : "ServiceLink Tanzania — Find trusted fundi, electricians & plumbers near you";
+    const desc = lang === "sw"
+      ? "Ajiri watoa huduma wa Tanzania wanaoaminika kwa dakika chache. Ongea moja kwa moja kupitia WhatsApp na fundi, fundi umeme, mabomba na walimu waliothibitishwa karibu nawe."
+      : "Hire trusted Tanzanian service providers in minutes. Chat directly via WhatsApp with verified fundi, electricians, plumbers and tutors near you.";
     let m = document.querySelector('meta[name="description"]');
     if (!m) { m = document.createElement("meta"); m.setAttribute("name", "description"); document.head.appendChild(m); }
     m.setAttribute("content", desc);
