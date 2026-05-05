@@ -13,6 +13,7 @@ import { CATEGORIES, LOCATIONS, categoryLabel } from "@/lib/categories";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, BadgeCheck, Sparkles } from "lucide-react";
 import { z } from "zod";
+import { useTranslation } from "@/lib/i18n";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -32,14 +33,15 @@ interface Listing {
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
+  const { t, lang } = useTranslation();
   const [listings, setListings] = useState<Listing[]>([]);
   const [editing, setEditing] = useState<Listing | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    document.title = "Dashboard — ServiceLink Tanzania";
+    document.title = (lang === "sw" ? "Dashibodi" : "Dashboard") + " — ServiceLink Tanzania";
     if (user) load();
-  }, [user]);
+  }, [user, lang]);
 
   async function load() {
     const { data } = await supabase.from("listings").select("*").eq("owner_id", user!.id).order("created_at", { ascending: false });
@@ -54,7 +56,7 @@ export default function Dashboard() {
     const form = new FormData(e.currentTarget);
     const raw = Object.fromEntries(form) as Record<string, string>;
     const parsed = schema.safeParse(raw);
-    if (!parsed.success) { toast.error("Please check the form fields"); return; }
+    if (!parsed.success) { toast.error(t("dash.checkFields")); return; }
     const v = parsed.data;
     const payload = {
       name: v.name,
@@ -69,72 +71,75 @@ export default function Dashboard() {
     if (editing) {
       const { error } = await supabase.from("listings").update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message);
-      toast.success("Listing updated");
+      toast.success(t("dash.updated"));
     } else {
       const { error } = await supabase.from("listings").insert(payload);
       if (error) return toast.error(error.message);
-      toast.success("Listing published");
+      toast.success(t("dash.published"));
     }
     setEditing(null); setShowForm(false); load();
   }
 
   async function remove(id: string) {
-    if (!confirm("Delete this listing?")) return;
+    if (!confirm(t("dash.confirmDelete"))) return;
     const { error } = await supabase.from("listings").delete().eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Deleted"); load(); }
+    if (error) toast.error(error.message); else { toast.success(t("dash.deleted")); load(); }
   }
 
   return (
     <div className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground md:text-3xl">My listings</h1>
-          <p className="text-sm text-muted-foreground">Manage the services you offer</p>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">{t("dash.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.sub")}</p>
         </div>
-        <Button onClick={() => { setEditing(null); setShowForm(true); }}><Plus className="mr-2 h-4 w-4" />New listing</Button>
+        <Button onClick={() => { setEditing(null); setShowForm(true); }}><Plus className="mr-2 h-4 w-4" />{t("dash.new")}</Button>
       </div>
 
       {showForm && (
         <Card className="mb-6 p-5 shadow-soft md:p-6">
-          <h2 className="mb-4 text-lg font-semibold">{editing ? "Edit listing" : "New listing"}</h2>
+          <h2 className="mb-4 text-lg font-semibold">{editing ? t("dash.editTitle") : t("dash.newTitle")}</h2>
           <form onSubmit={save} className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <Label htmlFor="name">Service / Business name *</Label>
+              <Label htmlFor="name">{t("dash.f.name")}</Label>
               <Input id="name" name="name" defaultValue={editing?.name} required maxLength={100} />
             </div>
             <div>
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">{t("dash.f.category")}</Label>
               <Select name="category" defaultValue={editing?.category}>
-                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c.slug} value={c.slug}>{c.label}</SelectItem>)}</SelectContent>
+                <SelectTrigger><SelectValue placeholder={t("dash.f.categoryPh")} /></SelectTrigger>
+                <SelectContent>{CATEGORIES.map((c) => {
+                  const k = `cat.${c.slug}`; const tr = t(k);
+                  return <SelectItem key={c.slug} value={c.slug}>{tr === k ? c.label : tr}</SelectItem>;
+                })}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="location">Location *</Label>
+              <Label htmlFor="location">{t("dash.f.location")}</Label>
               <Select name="location" defaultValue={editing?.location ?? "Dar es Salaam"}>
-                <SelectTrigger><SelectValue placeholder="Select location" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("dash.f.locationPh")} /></SelectTrigger>
                 <SelectContent>{LOCATIONS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="phone">Phone *</Label>
+              <Label htmlFor="phone">{t("dash.f.phone")}</Label>
               <Input id="phone" name="phone" defaultValue={editing?.phone} required placeholder="+255 7XX XXX XXX" maxLength={20} />
             </div>
             <div>
-              <Label htmlFor="whatsapp">WhatsApp (optional)</Label>
+              <Label htmlFor="whatsapp">{t("dash.f.whatsapp")}</Label>
               <Input id="whatsapp" name="whatsapp" defaultValue={editing?.whatsapp ?? ""} placeholder="+255 7XX XXX XXX" maxLength={20} />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="image_url">Profile image URL (optional)</Label>
+              <Label htmlFor="image_url">{t("dash.f.image")}</Label>
               <Input id="image_url" name="image_url" defaultValue={editing?.image_url ?? ""} placeholder="https://…" maxLength={500} />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">{t("dash.f.description")}</Label>
               <Textarea id="description" name="description" defaultValue={editing?.description} required minLength={10} maxLength={1000} rows={4} />
             </div>
             <div className="flex gap-2 md:col-span-2">
-              <Button type="submit">{editing ? "Save" : "Publish"}</Button>
-              <Button type="button" variant="ghost" onClick={() => { setEditing(null); setShowForm(false); }}>Cancel</Button>
+              <Button type="submit">{editing ? t("dash.save") : t("dash.publish")}</Button>
+              <Button type="button" variant="ghost" onClick={() => { setEditing(null); setShowForm(false); }}>{t("dash.cancel")}</Button>
             </div>
           </form>
         </Card>
@@ -142,7 +147,7 @@ export default function Dashboard() {
 
       {listings.length === 0 ? (
         <Card className="p-10 text-center text-muted-foreground">
-          You haven't listed any services yet.
+          {t("dash.empty")}
         </Card>
       ) : (
         <div className="grid gap-3">
@@ -151,18 +156,18 @@ export default function Dashboard() {
               <div className="flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link to={`/provider/${l.id}`} className="font-semibold text-foreground hover:text-primary">{l.name}</Link>
-                  {l.featured && <Badge className="gap-1 bg-secondary text-secondary-foreground"><Sparkles className="h-3 w-3" />Featured</Badge>}
-                  {l.verified && <Badge variant="outline" className="gap-1"><BadgeCheck className="h-3 w-3 text-primary" />Verified</Badge>}
+                  {l.featured && <Badge className="gap-1 bg-secondary text-secondary-foreground"><Sparkles className="h-3 w-3" />{t("card.featured")}</Badge>}
+                  {l.verified && <Badge variant="outline" className="gap-1"><BadgeCheck className="h-3 w-3 text-primary" />{t("card.verified")}</Badge>}
                   <Badge variant={l.status === "approved" ? "secondary" : "outline"} className="capitalize">{l.status}</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">{categoryLabel(l.category)} · {l.location}</p>
+                <p className="text-sm text-muted-foreground">{categoryLabel(l.category, t)} · {l.location}</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => { setEditing(l); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-                  <Pencil className="mr-2 h-4 w-4" />Edit
+                  <Pencil className="mr-2 h-4 w-4" />{t("dash.edit")}
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => remove(l.id)}>
-                  <Trash2 className="mr-2 h-4 w-4" />Delete
+                  <Trash2 className="mr-2 h-4 w-4" />{t("dash.delete")}
                 </Button>
               </div>
             </Card>
