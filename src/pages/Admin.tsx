@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { categoryLabel } from "@/lib/categories";
 import { toast } from "sonner";
 import { Sparkles, BadgeCheck, Trash2, Check, X } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 interface Listing {
   id: string; name: string; category: string; location: string;
@@ -17,9 +18,13 @@ interface Listing {
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
+  const { t, lang } = useTranslation();
   const [items, setItems] = useState<Listing[]>([]);
 
-  useEffect(() => { document.title = "Admin — ServiceLink Tanzania"; if (isAdmin) load(); }, [isAdmin]);
+  useEffect(() => {
+    document.title = (lang === "sw" ? "Msimamizi" : "Admin") + " — ServiceLink Tanzania";
+    if (isAdmin) load();
+  }, [isAdmin, lang]);
 
   async function load() {
     const { data } = await supabase.from("listings").select("id,name,category,location,status,featured,verified").order("created_at", { ascending: false });
