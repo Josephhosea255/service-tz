@@ -26,6 +26,11 @@ export const LOCATIONS = [
   "Other",
 ] as const;
 
-export function categoryLabel(slug: string) {
+export function categoryLabel(slug: string, t?: (k: string) => string) {
+  if (t) {
+    const key = `cat.${slug}`;
+    const tr = t(key);
+    if (tr && tr !== key) return tr;
+  }
   return CATEGORIES.find((c) => c.slug === slug)?.label ?? slug;
 }
