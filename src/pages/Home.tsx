@@ -36,7 +36,7 @@ export default function Home() {
       .order("created_at", { ascending: false })
       .limit(8)
       .then(({ data }) => setFeatured((data ?? []) as ListingCardData[]));
-  }, []);
+  }, [lang]);
 
   function onSearch(e: React.FormEvent) {
     e.preventDefault();
