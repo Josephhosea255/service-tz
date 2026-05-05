@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/lib/i18n";
 import Layout from "@/components/Layout";
 import Home from "./pages/Home";
 import SearchPage from "./pages/Search";
@@ -25,6 +26,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <LanguageProvider>
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
@@ -37,6 +39,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
+            </LanguageProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

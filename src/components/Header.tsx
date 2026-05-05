@@ -8,10 +8,13 @@ import {
   DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Header() {
   const { user, isAdmin, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/85 backdrop-blur-md">
@@ -22,20 +25,21 @@ export default function Header() {
           </div>
           <div className="leading-tight">
             <div className="text-base font-bold text-foreground">ServiceLink</div>
-            <div className="-mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Tanzania</div>
+            <div className="-mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{t("brand.tagline")}</div>
           </div>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <NavLink to="/" end className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>Home</NavLink>
-          <NavLink to="/search" className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>Browse</NavLink>
+          <NavLink to="/" end className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t("nav.home")}</NavLink>
+          <NavLink to="/search" className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t("nav.browse")}</NavLink>
           {user && (
-            <NavLink to="/dashboard" className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>Dashboard</NavLink>
+            <NavLink to="/dashboard" className={({ isActive }) => `text-sm font-medium transition-smooth hover:text-primary ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t("nav.dashboard")}</NavLink>
           )}
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
+          <LanguageSwitcher />
+          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={t("nav.toggleTheme")}>
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
@@ -52,15 +56,15 @@ export default function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem asChild><Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/favorites"><Heart className="mr-2 h-4 w-4" />Favorites</Link></DropdownMenuItem>
-                {isAdmin && <DropdownMenuItem asChild><Link to="/admin"><Shield className="mr-2 h-4 w-4" />Admin</Link></DropdownMenuItem>}
+                <DropdownMenuItem asChild><Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />{t("nav.dashboard")}</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/favorites"><Heart className="mr-2 h-4 w-4" />{t("nav.favorites")}</Link></DropdownMenuItem>
+                {isAdmin && <DropdownMenuItem asChild><Link to="/admin"><Shield className="mr-2 h-4 w-4" />{t("nav.admin")}</Link></DropdownMenuItem>}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />{t("nav.signOut")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild size="sm" variant="default"><Link to="/auth">Sign in</Link></Button>
+            <Button asChild size="sm" variant="default"><Link to="/auth">{t("nav.signIn")}</Link></Button>
           )}
         </div>
       </div>

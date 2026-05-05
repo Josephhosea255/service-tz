@@ -9,6 +9,7 @@ import { MapPin, Phone, BadgeCheck, Sparkles, Star, Heart, ArrowLeft, MessageCir
 import { categoryLabel } from "@/lib/categories";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n";
 
 interface Listing {
   id: string; name: string; category: string; description: string;
@@ -20,6 +21,7 @@ interface Review { id: string; rating: number; comment: string | null; user_id: 
 export default function ProviderProfile() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [listing, setListing] = useState<Listing | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isFav, setIsFav] = useState(false);
@@ -41,7 +43,7 @@ export default function ProviderProfile() {
   }
 
   async function toggleFavorite() {
-    if (!user) { toast.error("Please sign in to save favorites"); return; }
+    if (!user) { toast.error(t("profile.signInFav")); return; }
     if (isFav) {
       await supabase.from("favorites").delete().eq("listing_id", id!).eq("user_id", user.id);
       setIsFav(false);
@@ -53,23 +55,23 @@ export default function ProviderProfile() {
 
   async function submitReview(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) { toast.error("Please sign in to leave a review"); return; }
+    if (!user) { toast.error(t("profile.signInReview")); return; }
     const { error } = await supabase.from("reviews").upsert(
       { listing_id: id!, user_id: user.id, rating, comment: comment.trim() || null },
       { onConflict: "listing_id,user_id" }
     );
-    if (error) toast.error(error.message); else { toast.success("Review submitted"); setComment(""); load(); }
+    if (error) toast.error(error.message); else { toast.success(t("profile.reviewSubmitted")); setComment(""); load(); }
   }
 
-  if (!listing) return <div className="container py-16 text-center text-muted-foreground">Loading…</div>;
+  if (!listing) return <div className="container py-16 text-center text-muted-foreground">{t("profile.loading")}</div>;
 
   const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
   const wa = (listing.whatsapp || listing.phone).replace(/[^\d]/g, "");
-  const waUrl = `https://wa.me/${wa}?text=${encodeURIComponent(`Hi ${listing.name}, I found you on ServiceLink Tanzania.`)}`;
+  const waUrl = `https://wa.me/${wa}?text=${encodeURIComponent(t("card.waMessage", { name: listing.name }))}`;
 
   return (
     <div className="container max-w-4xl py-6 md:py-10">
-      <Button asChild variant="ghost" size="sm" className="mb-4"><Link to="/search"><ArrowLeft className="mr-2 h-4 w-4" />Back</Link></Button>
+      <Button asChild variant="ghost" size="sm" className="mb-4"><Link to="/search"><ArrowLeft className="mr-2 h-4 w-4" />{t("profile.back")}</Link></Button>
 
       <Card className="overflow-hidden bg-gradient-card">
         <div className="relative aspect-[16/9] overflow-hidden bg-muted sm:aspect-[21/9]">
@@ -80,7 +82,7 @@ export default function ProviderProfile() {
               {listing.name.slice(0,1).toUpperCase()}
             </div>
           )}
-          {listing.featured && <Badge className="absolute left-3 top-3 gap-1 bg-secondary text-secondary-foreground"><Sparkles className="h-3 w-3" /> Featured</Badge>}
+          {listing.featured && <Badge className="absolute left-3 top-3 gap-1 bg-secondary text-secondary-foreground"><Sparkles className="h-3 w-3" /> {t("card.featured")}</Badge>}
         </div>
 
         <div className="space-y-5 p-5 md:p-8">
@@ -91,13 +93,13 @@ export default function ProviderProfile() {
                 {listing.verified && <BadgeCheck className="h-6 w-6 text-primary" aria-label="Verified" />}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <Badge variant="secondary" className="bg-muted text-muted-foreground">{categoryLabel(listing.category)}</Badge>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground">{categoryLabel(listing.category, t)}</Badge>
                 <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{listing.location}</span>
                 {avg != null && <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-secondary text-secondary" />{avg.toFixed(1)} ({reviews.length})</span>}
               </div>
             </div>
             <Button onClick={toggleFavorite} variant={isFav ? "secondary" : "outline"} size="sm">
-              <Heart className={`mr-2 h-4 w-4 ${isFav ? "fill-current" : ""}`} />{isFav ? "Saved" : "Save"}
+              <Heart className={`mr-2 h-4 w-4 ${isFav ? "fill-current" : ""}`} />{isFav ? t("profile.saved") : t("profile.save")}
             </Button>
           </div>
 
@@ -105,7 +107,7 @@ export default function ProviderProfile() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <Button asChild variant="whatsapp" size="lg">
-              <a href={waUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="mr-2 h-5 w-5" />WhatsApp</a>
+              <a href={waUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="mr-2 h-5 w-5" />{t("profile.requestService")}</a>
             </Button>
             <Button asChild variant="outline" size="lg">
               <a href={`tel:${listing.phone}`}><Phone className="mr-2 h-5 w-5" />{listing.phone}</a>
@@ -115,27 +117,27 @@ export default function ProviderProfile() {
       </Card>
 
       <section className="mt-10">
-        <h2 className="mb-4 text-xl font-bold text-foreground">Reviews</h2>
+        <h2 className="mb-4 text-xl font-bold text-foreground">{t("profile.reviews")}</h2>
 
         {user && (
           <Card className="mb-6 p-5">
             <form onSubmit={submitReview} className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Your rating:</span>
+                <span className="text-sm font-medium">{t("profile.yourRating")}</span>
                 {[1,2,3,4,5].map((n) => (
                   <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}>
                     <Star className={`h-5 w-5 ${n <= rating ? "fill-secondary text-secondary" : "text-muted-foreground"}`} />
                   </button>
                 ))}
               </div>
-              <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your experience…" maxLength={500} rows={3} />
-              <Button type="submit" size="sm">Submit review</Button>
+              <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t("profile.shareExp")} maxLength={500} rows={3} />
+              <Button type="submit" size="sm">{t("profile.submitReview")}</Button>
             </form>
           </Card>
         )}
 
         {reviews.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No reviews yet.</p>
+          <p className="text-sm text-muted-foreground">{t("profile.noReviews")}</p>
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (

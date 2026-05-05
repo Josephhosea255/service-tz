@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORIES, LOCATIONS } from "@/lib/categories";
 import { Search } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function SearchPage() {
+  const { t, lang } = useTranslation();
   const [params, setParams] = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [category, setCategory] = useState(params.get("category") ?? "all");
@@ -17,8 +19,8 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = "Browse services — ServiceLink Tanzania";
-  }, []);
+    document.title = (lang === "sw" ? "Vinjari huduma" : "Browse services") + " — ServiceLink Tanzania";
+  }, [lang]);
 
   useEffect(() => {
     setLoading(true);
@@ -49,35 +51,39 @@ export default function SearchPage() {
 
   return (
     <div className="container py-8">
-      <h1 className="mb-6 text-2xl font-bold text-foreground md:text-3xl">Browse providers</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground md:text-3xl">{t("search.title")}</h1>
 
       <form onSubmit={applyFilters} className="mb-8 grid gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft md:grid-cols-[1fr_180px_180px_auto]">
         <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or description" className="border-0 shadow-none focus-visible:ring-0" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search.placeholder")} className="border-0 shadow-none focus-visible:ring-0" />
         </div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder={t("search.category")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {CATEGORIES.map((c) => <SelectItem key={c.slug} value={c.slug}>{c.label}</SelectItem>)}
+            <SelectItem value="all">{t("search.allCategories")}</SelectItem>
+            {CATEGORIES.map((c) => {
+              const key = `cat.${c.slug}`;
+              const tr = t(key);
+              return <SelectItem key={c.slug} value={c.slug}>{tr === key ? c.label : tr}</SelectItem>;
+            })}
           </SelectContent>
         </Select>
         <Select value={location} onValueChange={setLocation}>
-          <SelectTrigger><SelectValue placeholder="Location" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder={t("search.location")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All locations</SelectItem>
+            <SelectItem value="all">{t("search.allLocations")}</SelectItem>
             {LOCATIONS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button type="submit">Apply</Button>
+        <Button type="submit">{t("search.apply")}</Button>
       </form>
 
       {loading ? (
-        <div className="text-center text-muted-foreground">Loading…</div>
+        <div className="text-center text-muted-foreground">{t("search.loading")}</div>
       ) : results.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-          No providers match your filters yet.
+          {t("search.empty")}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
